@@ -36,12 +36,50 @@ func (a AuthRepositoryDB) FindById(ctx context.Context, userName string, passwor
 	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[User])
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, errs.NewNotFoundError("User not found")
+			return nil, errs.NewAuthenticationError("Invalid credentional")
 		}
 		logger.Error("error while mapping user record " + err.Error())
 		return nil, errs.NewUnexpectedError("Unexpected database error")
 	}
 
 	return &user, nil
+
+}
+
+func (a AuthRepositoryDB) RefreshTokenExists(ctx context.Context, refreshToken string) *errs.AppError {
+	sqlSelect := `SELECT refresh_token
+	              FROM refresh_token_store where refresh_token=$1`
+	var token string
+	err := a.pool.QueryRow(ctx, sqlSelect, refreshToken).Scan(&token)
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return errs.NewAuthenticationError("Refresh token not exists")
+		}
+		logger.Error("error while fetching refresh token " + err.Error())
+		return errs.NewUnexpectedError("Unexpected database error")
+	}
+
+	return nil
+
+}
+
+func (a AuthRepositoryDB) GenerateAndSaveRefreshToken(ctx context.Context, authToken AuthToken) (string, *errs.AppError) {
+
+	token, appError := authToken.NewRefreshToken()
+	if appError != nil {
+		return "", appError
+	}
+
+	sqlInsert := `INSERT INTO refresh_token_store(
+	           refresh_token)
+	           VALUES ($1)`
+
+	_, err := a.pool.Exec(ctx, sqlInsert, token)
+	if err != nil {
+		logger.Error("Error when insert refresh token " + err.Error())
+		return "", errs.NewUnexpectedError("Unexpected database error")
+	}
+	return token, nil
 
 }

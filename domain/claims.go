@@ -8,11 +8,21 @@ import (
 
 const HMAC_SAMPLE_SECRET = "hmacSampleSecret"
 const ACCESS_TOKEN_DURATION = time.Hour
+const Refresh_TOKEN_DURATION = time.Hour * 24 * 30
 
 type AccessTokenClaims struct {
 	CustomerId string   `json:"customer_id"`
 	Accounts   []string `json:"accounts"`
-	Username   string   `json:"username"`
+	UserName   string   `json:"user_name"`
+	Role       string   `json:"role"`
+	jwt.StandardClaims
+}
+
+type RefreshTokenClaims struct {
+	TokenType  string   `json:"token_type"`
+	CustomerId string   `json:"customer_id"`
+	Accounts   []string `json:"accounts"`
+	UserName   string   `json:"user_name"`
 	Role       string   `json:"role"`
 	jwt.StandardClaims
 }
@@ -44,4 +54,29 @@ func (c AccessTokenClaims) IsRequestVerifiedWithTokenClaims(urlParams map[string
 		return false
 	}
 	return true
+}
+
+func (c AccessTokenClaims) RefreshTokenClaims() RefreshTokenClaims {
+	return RefreshTokenClaims{
+		TokenType:  "refresh_token",
+		CustomerId: c.CustomerId,
+		Accounts:   c.Accounts,
+		UserName:   c.UserName,
+		Role:       c.Role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(Refresh_TOKEN_DURATION).Unix(),
+		},
+	}
+}
+
+func (r RefreshTokenClaims) AccessTokenClaims() AccessTokenClaims {
+	return AccessTokenClaims{
+		CustomerId: r.CustomerId,
+		Accounts:   r.Accounts,
+		UserName:   r.UserName,
+		Role:       r.Role,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(ACCESS_TOKEN_DURATION).Unix(),
+		},
+	}
 }

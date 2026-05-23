@@ -19,6 +19,8 @@ type User struct {
 
 type AuthRepository interface {
 	FindById(ctx context.Context, userName string, password string) (*User, *errs.AppError)
+	GenerateAndSaveRefreshToken(ctx context.Context,authToken AuthToken)(string,*errs.AppError)
+	RefreshTokenExists(ctx context.Context,refreshToken string)*errs.AppError
 }
 
 func (u User) ClaimsForAccessToken() AccessTokenClaims {
@@ -34,7 +36,7 @@ func (u User) claimsForUser() AccessTokenClaims {
 	return AccessTokenClaims{
 		CustomerId: u.CustomerId.String,
 		Accounts:   accounts,
-		Username:   u.UserName,
+		UserName:   u.UserName,
 		Role:       u.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(ACCESS_TOKEN_DURATION).Unix(),
@@ -44,7 +46,7 @@ func (u User) claimsForUser() AccessTokenClaims {
 
 func (u User) claimsForAdmin() AccessTokenClaims {
 	return AccessTokenClaims{
-		Username: u.UserName,
+		UserName: u.UserName,
 		Role:     u.Role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(ACCESS_TOKEN_DURATION).Unix(),

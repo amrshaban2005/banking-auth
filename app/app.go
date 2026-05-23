@@ -45,6 +45,7 @@ func Start() {
 
 	router.GET("auth/login", ah.Login)
 	router.GET("auth/verify", ah.Verify)
+	router.GET("auth/refresh", ah.Refresh)
 
 	// starting the server
 	address := os.Getenv("SERVER_ADDRESS")

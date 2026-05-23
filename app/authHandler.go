@@ -27,7 +27,7 @@ func (a AuthHandler) Login(c *gin.Context) {
 		c.JSON(err.Code, gin.H{"error": err.AsMessage()})
 		return
 	}
-	c.JSON(http.StatusOK, response.AccessToken)
+	c.JSON(http.StatusOK, response)
 }
 
 /*
@@ -54,6 +54,23 @@ func (a AuthHandler) Verify(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusForbidden, notAuthorizedReponse("Missing token"))
 	}
+
+}
+
+func (ah AuthHandler) Refresh(c *gin.Context) {
+	var req dto.RefreshTokenRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Error("Error while read refresh params " + err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data"})
+		return
+	}
+	token, err := ah.service.Refresh(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(err.Code, gin.H{"error": err.Message})
+		return
+	}
+	c.JSON(http.StatusOK, token)
 
 }
 

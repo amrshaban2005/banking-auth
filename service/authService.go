@@ -14,6 +14,7 @@ import (
 type AuthService interface {
 	Login(ctx context.Context, login dto.LoginRequest) (dto.LoginResponse, *errs.AppError)
 	Verify(urlParams map[string]string) *errs.AppError
+	Refresh(ctx context.Context, request *dto.RefreshTokenRequest) (dto.LoginResponse, *errs.AppError)
 }
 
 type DefualtAuthService struct {
@@ -38,7 +39,11 @@ func (a *DefualtAuthService) Login(ctx context.Context, login dto.LoginRequest) 
 	if err != nil {
 		return nil, err
 	}
-	return &dto.LoginResponse{accessToken}, nil
+	refreshToken, err := a.repo.GenerateAndSaveRefreshToken(ctx, authToken)
+	if err != nil {
+		return nil, err
+	}
+	return &dto.LoginResponse{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
 func (a *DefualtAuthService) Verify(urlParams map[string]string) *errs.AppError {
@@ -65,9 +70,34 @@ func (a *DefualtAuthService) Verify(urlParams map[string]string) *errs.AppError 
 			return nil
 
 		} else {
-			return errs.NewAuthorizationError("Invalid Token")
+			return errs.NewAuthorizationError("Expired token")
 		}
 	}
+}
+
+func (a DefualtAuthService) Refresh(ctx context.Context, request dto.RefreshTokenRequest) (*dto.LoginResponse, *errs.AppError) {
+	// check the access token is valid and expired
+	vErr := request.IsAccessTokenValid()
+	if vErr != nil {
+		if vErr.Errors == jwt.ValidationErrorExpired {
+			// continue with refresh token
+			// check the refersh token is exists
+			err := a.repo.RefreshTokenExists(ctx, request.RefreshToken)
+			if err != nil {
+				return nil, err
+			}
+			// todo check same user of access token
+			// generate a access token from refresh token.
+			accessToken, err := domain.NewAccessTokenFromRefreshToken(request.RefreshToken)
+			if err != nil {
+				return nil, err
+			}
+			return &dto.LoginResponse{AccessToken: accessToken}, nil
+
+		}
+		return nil, errs.NewAuthenticationError("Invalid token")
+	}
+	return nil, errs.NewAuthenticationError("cannot generate a new access token until the current one expires")
 }
 
 func jwtTokenFromString(tokenString string) (*jwt.Token, error) {
