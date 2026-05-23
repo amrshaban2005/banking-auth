@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/amrshaban2005/banking-auth/errs"
+	"github.com/amrshaban2005/banking-lib/errs"
 	"github.com/dgrijalva/jwt-go"
 )
 

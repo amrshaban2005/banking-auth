@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/amrshaban2005/banking-auth/dto"
-	"github.com/amrshaban2005/banking-auth/logger"
 	"github.com/amrshaban2005/banking-auth/service"
+	"github.com/amrshaban2005/banking-lib/logger"
 	"github.com/gin-gonic/gin"
 )
 

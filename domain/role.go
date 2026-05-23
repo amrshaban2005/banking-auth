@@ -3,7 +3,7 @@ package domain
 import (
 	"strings"
 
-	"github.com/amrshaban2005/banking-auth/logger"
+	"github.com/amrshaban2005/banking-lib/logger"
 )
 
 const (

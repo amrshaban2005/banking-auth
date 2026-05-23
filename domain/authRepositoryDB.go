@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/amrshaban2005/banking-auth/errs"
-	"github.com/amrshaban2005/banking-auth/logger"
+	"github.com/amrshaban2005/banking-lib/errs"
+	"github.com/amrshaban2005/banking-lib/logger"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

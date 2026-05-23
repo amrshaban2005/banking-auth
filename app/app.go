@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/amrshaban2005/banking-auth/domain"
-	"github.com/amrshaban2005/banking-auth/logger"
 	"github.com/amrshaban2005/banking-auth/service"
+	"github.com/amrshaban2005/banking-lib/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/amrshaban2005/banking-auth/domain"
 	"github.com/amrshaban2005/banking-auth/dto"
-	"github.com/amrshaban2005/banking-auth/errs"
+	"github.com/amrshaban2005/banking-lib/errs"
 	"github.com/bytedance/gopkg/util/logger"
 	"github.com/dgrijalva/jwt-go"
 )
